@@ -7,9 +7,6 @@ import (
 	"os"
 )
 
-func homeHandler(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Hello from Todo app"))
-}
 
 func main() {
 	port := os.Getenv("PORT")
@@ -18,7 +15,7 @@ func main() {
 	}
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("GET /", homeHandler)
+	mux.Handle("GET /", http.FileServer(http.Dir("public")))
 
 	fmt.Printf("Server started in port %s\n", port)
 
