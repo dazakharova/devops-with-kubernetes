@@ -23,6 +23,7 @@ ENV PORT=8080
 WORKDIR /app
 
 COPY --from=builder /app/todo .
+COPY --from=builder /app/public ./public
 
 ENTRYPOINT ["./todo"]
 
