@@ -18,8 +18,6 @@ RUN go build -ldflags='-s' -o todo ./cmd/todo
 #Runtime stage
 FROM scratch AS runtime
 
-ENV PORT=8080
-
 WORKDIR /app
 
 COPY --from=builder /app/todo .
