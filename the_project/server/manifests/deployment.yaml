@@ -14,4 +14,7 @@ spec:
     spec:
       containers:
         - name: todo-server
-          image: dazakharova/todo-app
+          image: dazakharova/todo-app:1.2
+          env:
+            - name: PORT
+              value: "5001"
