@@ -16,7 +16,9 @@ COPY . .
 RUN go build -ldflags='-s' -o todo ./cmd/todo
 
 #Runtime stage
-FROM scratch AS runtime
+FROM alpine:3.20 AS runtime
+
+RUN apk add --no-cache ca-certificates
 
 WORKDIR /app
 

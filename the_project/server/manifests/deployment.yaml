@@ -12,9 +12,15 @@ spec:
       labels:
         app: todo-server
     spec:
+      volumes:
+        - name: random-image
+          emptyDir: { }
       containers:
         - name: todo-server
-          image: dazakharova/todo-app:1.2
+          image: dazakharova/todo-app:1.5
+          volumeMounts:
+            - name: random-image
+              mountPath: /usr/src/app/cache
           env:
             - name: PORT
               value: "5001"
