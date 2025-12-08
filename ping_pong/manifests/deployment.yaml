@@ -12,9 +12,16 @@ spec:
       labels:
         app: ping-pong
     spec:
+      volumes:
+      - name: shared-status-volume
+        persistentVolumeClaim:
+          claimName: shared-status-claim
       containers:
         - name: ping-pong
-          image: dazakharova/ping-pong:1.0
+          image: dazakharova/ping-pong:1.1
           env:
             - name: PORT
               value: "3001"
+          volumeMounts:
+            - name: shared-status-volume
+              mountPath: /usr/src/app/data

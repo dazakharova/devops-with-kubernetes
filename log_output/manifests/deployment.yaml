@@ -14,19 +14,24 @@ spec:
     spec:
       volumes:
         - name: shared-status
-          emptyDir: { }
+          emptyDir: {}
+        - name: shared-status-volume
+          persistentVolumeClaim:
+            claimName: shared-status-claim
       containers:
         - name: log-writer
-          image: dazakharova/log_output:1.3
+          image: dazakharova/log_output:1.4
           command: [ "node", "writer.js" ]
           volumeMounts:
             - name: shared-status
               mountPath: /usr/src/app/shared
         - name: log-reader
-          image: dazakharova/log_output:1.3
+          image: dazakharova/log_output:1.4
           volumeMounts:
             - name: shared-status
               mountPath: /usr/src/app/shared
+            - name: shared-status-volume
+              mountPath: /usr/src/app/data
           env:
             - name: PORT
               value: "3000"
