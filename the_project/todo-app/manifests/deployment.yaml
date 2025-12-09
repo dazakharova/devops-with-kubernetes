@@ -1,22 +1,22 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: todo-server
+  name: todo-app
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: todo-server
+      app: todo-app
   template:
     metadata:
       labels:
-        app: todo-server
+        app: todo-app
     spec:
       volumes:
         - name: random-image
           emptyDir: { }
       containers:
-        - name: todo-server
+        - name: todo-app
           image: dazakharova/todo-app:1.6
           volumeMounts:
             - name: random-image
