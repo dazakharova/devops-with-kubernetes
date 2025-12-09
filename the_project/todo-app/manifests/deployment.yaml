@@ -17,7 +17,7 @@ spec:
           emptyDir: { }
       containers:
         - name: todo-app
-          image: dazakharova/todo-app:1.6
+          image: dazakharova/todo-app:1.7
           volumeMounts:
             - name: random-image
               mountPath: /usr/src/app/cache
