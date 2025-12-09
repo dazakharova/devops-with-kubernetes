@@ -7,15 +7,77 @@
     <body>
         <h1>The Project App</h1>
         <img src="/image" width="1200" height="1200" />
-        <form>
-            <input type="text" maxlength="140" />
+        <form id="todo-form">
+            <input type="text" name="todo" id="todo-input" maxlength="140" />
             <input type="submit" value="Create todo" />
         </form>
-        <ul>
-            <li>Learn JavaScript</li>
-            <li>Learn React</li>
-            <li>Build a project</li>
-        </ul>
+        <ul id="todo-list"></ul>
         <p>DevOps with Kubernetes 2025</p>
+
+        <script>
+            const form = document.getElementById('todo-form');
+            const input = document.getElementById('todo-input');
+            const list = document.getElementById('todo-list');
+
+            function renderTodos(todos) {
+                list.innerHTML = '';
+                todos.forEach((text) => {
+                    const li = document.createElement('li');
+                    li.textContent = text;
+                    list.appendChild(li);
+                });
+            }
+
+            async function loadTodos() {
+                try {
+                    const res = await fetch('/todos');
+                    if (!res.ok) {
+                        console.error('Failed to fetch todos:', res.status, res.statusText);
+                        return;
+                    }
+                    const data = await res.json();
+                    renderTodos(data);
+                } catch (err) {
+                    console.error('Error fetching todos:', err);
+                }
+            }
+
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const text = input.value.trim();
+
+                if (!text) {
+                    return;
+                }
+                if (text.length > 140) {
+                    alert('Todo must be 140 characters or less');
+                    return;
+                }
+
+                try {
+                    const res = await fetch('/todos', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ todo: text }),
+                    });
+
+                    if (!res.ok) {
+                        console.error('Failed to create todo:', res.status, res.statusText);
+                        return;
+                    }
+
+                    const data = await res.json();
+                    renderTodos(data);
+                    input.value = '';
+                } catch (err) {
+                    console.error('Error creating todo:', err);
+                }
+            });
+
+            // Load existing todos on page load
+            document.addEventListener('DOMContentLoaded', loadTodos);
+        </script>
     </body>
 </html>
