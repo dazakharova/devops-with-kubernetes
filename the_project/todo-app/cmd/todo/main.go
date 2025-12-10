@@ -7,20 +7,43 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"time"
 )
 
-const (
-	cacheDir  = "/usr/src/app/cache"
-	fileName  = "image.jpg"
-	remoteURL = "https://picsum.photos/1200"
-	ttl       = 10 * time.Minute
+var (
+	cacheDir  = getEnv("CACHE_DIR")
+	fileName  = getEnv("IMAGE_FILE_NAME")
+	remoteURL = getEnv("IMAGE_URL")
+	ttl       = getTTL("IMAGE_TTL_SECONDS")
 )
 
+func getEnv(key string) string {
+	v := os.Getenv(key)
+	if v == "" {
+		log.Fatalf("environment variable %s must be set", key)
+	}
+	return v
+}
+
+func getTTL(key string) time.Duration {
+	v := os.Getenv(key)
+	if v == "" {
+		log.Fatalf("environment variable %s must be set", key)
+	}
+
+	n, err := strconv.Atoi(v)
+	if err != nil {
+		log.Fatalf("invalid TTL value for %s: %v", key, err)
+	}
+
+	return time.Duration(n) * time.Second
+}
+
 func downloadAndCacheImage(url, localPath string) error {
-    if err := os.MkdirAll(cacheDir, 0o755); err != nil {
-        return fmt.Errorf("failed to prepare cache dir: %w", err)
-    }
+	if err := os.MkdirAll(cacheDir, 0o755); err != nil {
+		return fmt.Errorf("failed to prepare cache dir: %w", err)
+	}
 
 	resp, err := http.Get(url)
 	if err != nil {

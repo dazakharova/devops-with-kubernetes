@@ -18,10 +18,30 @@ spec:
           emptyDir: { }
       containers:
         - name: todo-app
-          image: dazakharova/todo-app:1.7
+          image: dazakharova/todo-app:1.8
           volumeMounts:
             - name: random-image
               mountPath: /usr/src/app/cache
           env:
             - name: PORT
               value: "5001"
+            - name: IMAGE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: todo-app-config
+                  key: IMAGE_URL
+            - name: IMAGE_TTL_SECONDS
+              valueFrom:
+                configMapKeyRef:
+                  name: todo-app-config
+                  key: IMAGE_TTL_SECONDS
+            - name: CACHE_DIR
+              valueFrom:
+                configMapKeyRef:
+                  name: todo-app-config
+                  key: CACHE_DIR
+            - name: IMAGE_FILE_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: todo-app-config
+                  key: IMAGE_FILE_NAME
