@@ -4,6 +4,8 @@ const path = require('path');
 
 const port = process.env.PORT || 3000;
 const statusFile = path.join('/usr/src/app/shared', 'status.txt');
+const infoFile = path.join('/usr/src/app/config', 'information.txt');
+const message = process.env.MESSAGE || '';
 const pingsUrl = 'http://ping-pong-svc:2345/pings';
 
 function readFileSafe(filePath, defaultValue, cb) {
@@ -44,23 +46,33 @@ const server = http.createServer((req, res) => {
         return res.end('Error reading status file');
       }
 
-      getPings()
-          .then((pings) => {
-            const trimmedStatus = statusData.trimEnd();
-            const body =
-                (trimmedStatus ? trimmedStatus + '\n' : '') +
-                `Ping / Pongs: ${pings}\n`;
+      fs.readFile(infoFile, 'utf8', (infoErr, infoData) => {
+        const fileLine = infoErr
+            ? 'file content: <error reading file>'
+            : `file content: ${infoData.trim()}`;
 
-            res.statusCode = 200;
-            res.setHeader('Content-Type', 'text/plain');
-            res.end(body);
-          })
-          .catch((err) => {
-            console.error('Error fetching pings:', err);
-            res.statusCode = 500;
-            res.setHeader('Content-Type', 'text/plain');
-            res.end('Error fetching pings...');
-          });
+        const envLine = `env variable: MESSAGE=${message || '<empty>'}`;
+
+        getPings()
+            .then((pings) => {
+              const trimmedStatus = statusData.trimEnd();
+              const body =
+                  fileLine + '\n' +
+                  envLine + '\n' +
+                  (trimmedStatus ? trimmedStatus + '\n' : '') +
+                  `Ping / Pongs: ${pings}\n`;
+
+              res.statusCode = 200;
+              res.setHeader('Content-Type', 'text/plain');
+              res.end(body);
+            })
+            .catch((err) => {
+              console.error('Error fetching pings:', err);
+              res.statusCode = 500;
+              res.setHeader('Content-Type', 'text/plain');
+              res.end('Error fetching pings...');
+            });
+      });
     });
   } else {
     res.statusCode = 404;

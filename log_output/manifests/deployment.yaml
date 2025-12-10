@@ -16,18 +16,29 @@ spec:
       volumes:
         - name: shared-status
           emptyDir: {}
+        - name: log-output-config
+          configMap:
+            name: log-output-configmap
       containers:
         - name: log-writer
-          image: dazakharova/log_output:1.5
+          image: dazakharova/log_output:1.6
           command: [ "node", "writer.js" ]
           volumeMounts:
             - name: shared-status
               mountPath: /usr/src/app/shared
         - name: log-reader
-          image: dazakharova/log_output:1.5
+          image: dazakharova/log_output:1.6
           volumeMounts:
             - name: shared-status
               mountPath: /usr/src/app/shared
+            - name: log-output-config
+              mountPath: /usr/src/app/config
+              readOnly: true
           env:
             - name: PORT
               value: "3000"
+            - name: MESSAGE
+              valueFrom:
+                configMapKeyRef:
+                  name: log-output-configmap
+                  key: MESSAGE
