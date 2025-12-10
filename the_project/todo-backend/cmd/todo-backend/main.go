@@ -61,10 +61,11 @@ func createTodo(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "4001"
-	}
+    port := os.Getenv("PORT")
+    if port == "" {
+        log.Fatal("PORT must be set")
+    }
+
 
 	mux := http.NewServeMux()
 
