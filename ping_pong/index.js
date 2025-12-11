@@ -1,22 +1,52 @@
 const http = require('http');
+const { Pool } = require('pg');
 
 const port = process.env.PORT || 3001;
+const connectionString = process.env.DATABASE_URL;
 
-let counter = 0;
+if (!connectionString) {
+  console.error('DATABASE_URL must be set');
+  process.exit(1);
+}
 
-const server = http.createServer((req, res) => {
+const pool = new Pool({ connectionString });
+
+async function getCounter() {
+  const result = await pool.query(
+      'SELECT value FROM pingpong_counter WHERE id = 1'
+  );
+  if (result.rowCount === 0) {
+    throw new Error('counter row missing');
+  }
+  return result.rows[0].value;
+}
+
+async function incrementCounter() {
+  const result = await pool.query(
+      'UPDATE pingpong_counter SET value = value + 1 WHERE id = 1 RETURNING value'
+  );
+  if (result.rowCount === 0) {
+    throw new Error('counter row missing');
+  }
+  return result.rows[0].value;
+}
+
+const server = http.createServer(async (req, res) => {
   if (req.method === 'GET' && req.url === '/pingpong') {
+    const value = await incrementCounter();
     res.statusCode = 200;
     res.setHeader('Content-Type', 'text/plain');
-    res.end(`pong ${counter++}`);
+    res.end(`pong ${value}`);
   } else if (req.method === 'GET' && req.url === '/pings') {
+    const value = await getCounter();
     res.statusCode = 200;
     res.setHeader('Content-Type', 'text/plain');
-    res.end(counter.toString());
+    res.end(value.toString());
   } else {
-    res.statusCode = 404;
+    console.error('Error handling request:', err);
+    res.statusCode = 500;
     res.setHeader('Content-Type', 'text/plain');
-    res.end('Not found');
+    res.end('Internal server error');
   }
 });
 
