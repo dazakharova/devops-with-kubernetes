@@ -15,7 +15,9 @@ spec:
     spec:
       containers:
         - name: ping-pong
-          image: dazakharova/ping-pong:1.2
+          image: dazakharova/ping-pong:1.3
           env:
             - name: PORT
               value: "3001"
+            - name: DATABASE_URL
+              value: "postgres://pingpong:pingpongpassword@postgres:5432/pingpong"
