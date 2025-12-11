@@ -1,1 +1,5 @@
 .idea/
+postgres-secret.yaml
+*.dec.yaml
+key.txt
+node_modules/
