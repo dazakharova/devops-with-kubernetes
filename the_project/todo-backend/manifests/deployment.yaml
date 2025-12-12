@@ -20,6 +20,9 @@ spec:
             - name: PORT
               value: "4001"
             - name: DATABASE_URL
-              value: "postgres://todo:todopassword@postgres:5432/todo?sslmode=disable"
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: DATABASE_URL
 
 
