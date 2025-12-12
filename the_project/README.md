@@ -102,3 +102,16 @@ If using the k3d setup above, open in browser:
 ```
 http://localhost:8081/
 ```
+
+## CronJob: hourly “Read <URL>” todo
+
+A Kubernetes CronJob creates a new todo every hour with text:
+
+`Read <random Wikipedia article URL>`
+
+Apply it:
+
+```
+kubectl apply -f the_project/manifests/cronjob-wiki-todo.yaml
+kubectl get cronjobs -n project
+```
