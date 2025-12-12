@@ -15,7 +15,11 @@ spec:
     spec:
       containers:
         - name: todo-backend
-          image: dazakharova/todo-backend:1.1
+          image: dazakharova/todo-backend:1.3
           env:
             - name: PORT
               value: "4001"
+            - name: DATABASE_URL
+              value: "postgres://todo:todopassword@postgres:5432/todo?sslmode=disable"
+
+
