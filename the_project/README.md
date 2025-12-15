@@ -115,3 +115,21 @@ Apply it:
 kubectl apply -f the_project/manifests/cronjob-wiki-todo.yaml
 kubectl get cronjobs -n project
 ```
+
+## Logging and Monitoring
+
+The project includes centralized logging using **Grafana Loki** and
+**Grafana Alloy**.
+
+- **todo-backend** emits structured request logs (including rejected
+  todos longer than 140 characters) to stdout.
+- **Grafana Alloy** runs as a DaemonSet and collects Kubernetes pod logs.
+- Logs are forwarded to **Loki** and can be explored in **Grafana**.
+
+Monitoring components run in separate namespaces and are installed
+via Helm:
+- `prometheus` – Prometheus + Grafana
+- `loki-stack` – Loki
+- `alloy` – Grafana Alloy (log collector)
+
+Configuration files are located at `./manifests/loki` (accessed from the root of the repository).
