@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: todo-backend
-          image: dazakharova/todo-backend:1.3
+          image: dazakharova/todo-backend:1.4
           env:
             - name: PORT
               value: "4001"
