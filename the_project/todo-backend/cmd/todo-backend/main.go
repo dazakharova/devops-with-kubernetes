@@ -15,6 +15,8 @@ import (
 	_ "github.com/lib/pq"
 )
 
+const maxTodoLen = 140
+
 func getTodos(store *models.TodoStore) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx, cancel := context.WithTimeout(r.Context(), 3*time.Second)
@@ -51,6 +53,11 @@ func createTodo(store *models.TodoStore) http.HandlerFunc {
 		todo := strings.TrimSpace(data.Todo)
 		if todo == "" {
 			http.Error(w, "todo cannot be empty", http.StatusBadRequest)
+			return
+		}
+
+		if len(todo) > maxTodoLen {
+			http.Error(w, "todo too long (max 140 characters)", http.StatusBadRequest)
 			return
 		}
 
