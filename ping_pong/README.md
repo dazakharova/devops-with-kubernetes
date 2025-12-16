@@ -72,3 +72,16 @@ kubectl apply -f manifests/
 Ping-pong is exposed via the shared Ingress (configured with log-output: `kubectl apply -f /log_output/manifests/ingress.yaml`) at:
 - http://localhost:8081/pingpong
 - http://localhost:8081/pings
+
+## Notes on Kubernetes configuration
+
+### PostgreSQL data directory
+The PostgreSQL StatefulSet mounts a PersistentVolume.
+Because Kubernetes volumes may contain a `lost+found` directory,
+PostgreSQL is configured to use a subdirectory via `subPath`
+to allow proper initialization of the data directory.
+
+### Service exposure
+For this exercise, the ping-pong Service is exposed using
+`type: LoadBalancer` instead of Ingress to allow direct access
+to the application via an external IP.
