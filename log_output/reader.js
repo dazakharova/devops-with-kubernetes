@@ -37,7 +37,11 @@ async function getPings() {
 }
 
 const server = http.createServer((req, res) => {
-  if (req.method === 'GET' && req.url === '/status') {
+  if (req.method === 'GET' && req.url === '/') {
+    res.statusCode = 200;
+    res.setHeader('Content-Type', 'text/plain');
+    return res.end('ok\n');
+  } else if (req.method === 'GET' && req.url === '/status') {
     readFileSafe(statusFile, '', (statusErr, statusData) => {
       if (statusErr) {
         console.error('Error reading status file:', statusErr);

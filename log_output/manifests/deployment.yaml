@@ -21,13 +21,13 @@ spec:
             name: log-output-configmap
       containers:
         - name: log-writer
-          image: dazakharova/log_output:1.6
+          image: dazakharova/log_output:1.7
           command: [ "node", "writer.js" ]
           volumeMounts:
             - name: shared-status
               mountPath: /usr/src/app/shared
         - name: log-reader
-          image: dazakharova/log_output:1.6
+          image: dazakharova/log_output:1.7
           volumeMounts:
             - name: shared-status
               mountPath: /usr/src/app/shared
