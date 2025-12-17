@@ -10,14 +10,20 @@ spec:
     - matches:
         - path:
             type: PathPrefix
-            value: /pingpong
+            value: /status
       backendRefs:
-        - name: ping-pong-svc
+        - name: log-output-svc
           port: 2345
     - matches:
         - path:
             type: PathPrefix
-            value: /status
+            value: /pingpong
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /
       backendRefs:
-        - name: log-output-svc
+        - name: ping-pong-svc
           port: 2345

@@ -66,15 +66,18 @@ kubectl apply -f manifests/
 
 ## Access
 
-Ping-pong is exposed via the Kubernetes Gateway API
-and routed through a shared Gateway with log-output.
+The Ping-pong application serves its main functionality at the root path `/`.
+
+In the cluster setup, traffic to `/pingpong` is routed via the Kubernetes
+Gateway API and rewritten to `/` before reaching the application.
 
 Endpoints:
-- `/pingpong`
-- `/pings`
+- `/` – increments counter and returns `pong N`
+- `/pings` – returns current counter value
+
 
 Example (GKE):
-- http://<INGRESS_IP>/pinpong
+- http://<GATEWAY_IP>/pinpong
 
 ## Notes on Kubernetes configuration
 

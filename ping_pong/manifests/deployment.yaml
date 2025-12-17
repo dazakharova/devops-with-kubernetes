@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: ping-pong
-          image: dazakharova/ping-pong:1.4
+          image: dazakharova/ping-pong:1.5
           env:
             - name: PORT
               value: "3001"
