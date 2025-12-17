@@ -32,7 +32,11 @@ async function incrementCounter() {
 }
 
 const server = http.createServer(async (req, res) => {
-  if (req.method === 'GET' && req.url === '/pingpong') {
+  if (req.method === 'GET' && req.url === '/') {
+    res.statusCode = 200;
+    res.setHeader('Content-Type', 'text/plain');
+    return res.end('ok\n');
+  } else if (req.method === 'GET' && req.url === '/pingpong') {
     const value = await incrementCounter();
     res.statusCode = 200;
     res.setHeader('Content-Type', 'text/plain');
@@ -43,7 +47,7 @@ const server = http.createServer(async (req, res) => {
     res.setHeader('Content-Type', 'text/plain');
     res.end(value.toString());
   } else {
-    console.error('Error handling request:', err);
+    console.error('Error handling request');
     res.statusCode = 500;
     res.setHeader('Content-Type', 'text/plain');
     res.end('Internal server error');
