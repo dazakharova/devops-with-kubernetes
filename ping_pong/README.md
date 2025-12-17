@@ -73,6 +73,9 @@ Ping-pong is exposed via the shared Ingress (configured with log-output: `kubect
 - http://localhost:8081/pingpong
 - http://localhost:8081/pings
 
+Example (GKE):
+- http://<INGRESS_IP>/pinpong
+
 ## Notes on Kubernetes configuration
 
 ### PostgreSQL data directory

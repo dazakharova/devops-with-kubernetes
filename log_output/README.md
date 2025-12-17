@@ -60,6 +60,10 @@ If using the k3d setup above, open in browser:
 http://localhost:8081/status
 ```
 
+Example (GKE):
+- http://<INGRESS_IP>/
+- http://<INGRESS_IP>/status
+
 Example output:
 
 ```
