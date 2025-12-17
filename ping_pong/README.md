@@ -7,15 +7,12 @@ Ping-pong responds to:
 - `GET /pingpong` -> returns `pong N` and increments counter
 - `GET /pings` -> returns current counter value
 
-## Prerequisites (local k3d example)
-This repository was tested using k3d with an Ingress/LoadBalancer mapping:
+## Networking
 
-```
-k3d cluster create \
-  --port 8082:30080@agent:0 \
-  -p 8081:80@loadbalancer \
-  --agents 2
-```  
+The application is exposed using the **Kubernetes Gateway API**.
+Traffic is routed via a shared Gateway using HTTPRoute rules.
+
+This replaces the previous Ingress-based setup.
 
 ## Namespace
 This application runs in the `exercises` namespace.
@@ -69,9 +66,12 @@ kubectl apply -f manifests/
 
 ## Access
 
-Ping-pong is exposed via the shared Ingress (configured with log-output: `kubectl apply -f /log_output/manifests/ingress.yaml`) at:
-- http://localhost:8081/pingpong
-- http://localhost:8081/pings
+Ping-pong is exposed via the Kubernetes Gateway API
+and routed through a shared Gateway with log-output.
+
+Endpoints:
+- `/pingpong`
+- `/pings`
 
 Example (GKE):
 - http://<INGRESS_IP>/pinpong

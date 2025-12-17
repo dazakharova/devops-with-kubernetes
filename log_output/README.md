@@ -28,16 +28,12 @@ The application consists of **two containers in a single Pod**:
 
 ---
 
-## Prerequisites (local k3d example)
+## Networking
 
-This application was tested using k3d with an Ingress controller:
+The application is exposed using the **Kubernetes Gateway API**.
+Traffic is routed via a shared Gateway using HTTPRoute rules.
 
-```
-k3d cluster create \
-  --port 8082:30080@agent:0 \
-  -p 8081:80@loadbalancer \
-  --agents 2
-```
+This replaces the previous Ingress-based setup.
 
 ## Namespace 
 
@@ -51,14 +47,12 @@ kubectl apply -f ../manifests/exercises-ns.yaml
 kubectl apply -f manifests/
 ```
 
-## Accessing the application 
+## Accessing the application
 
-Log output is exposed via Ingress.
+Log output is exposed via the Kubernetes Gateway API.
 
-If using the k3d setup above, open in browser:
-```
-http://localhost:8081/status
-```
+Endpoints:
+- `/status` – application status and shared log output
 
 Example (GKE):
 - http://<INGRESS_IP>/
