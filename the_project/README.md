@@ -20,22 +20,19 @@ Browser -> Ingress
 
 ---
 
-## Prerequisites
-
-This project was tested locally using **k3d** with an Ingress/LoadBalancer setup:
+## Deploy with Kustomize
 
 ```
-k3d cluster create \
-  --port 8082:30080@agent:0 \
-  -p 8081:80@loadbalancer \
-  --agents 2
+kubectl apply -k .
 ```
+
+---
 
 ## Namespace
 
-Apply namespace from the root folder:
+Apply namespace:
 ```
-kubectl apply -f the_project/../manifests/project-ns.yaml
+kubectl apply -f the_project/manifests/project-ns.yaml
 ```
 
 
