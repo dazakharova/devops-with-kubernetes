@@ -44,6 +44,11 @@ func requestLogger(logger *slog.Logger, next http.Handler) http.Handler {
 	})
 }
 
+func homeHandler(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("ok"))
+}
+
 func getTodos(store *models.TodoStore) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx, cancel := context.WithTimeout(r.Context(), 3*time.Second)
@@ -179,6 +184,7 @@ func main() {
 	logger.Info("starting server", slog.String("port", port))
 
 	mux := http.NewServeMux()
+	mux.HandleFunc("/", homeHandler)
 	mux.HandleFunc("GET /todos", getTodos(store))
 	mux.HandleFunc("POST /todos", createTodo(store, logger))
 
