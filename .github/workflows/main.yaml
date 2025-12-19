@@ -3,7 +3,7 @@ name: Release the_project
 on:
   push:
     branches:
-      main
+      - main
 
 env:
   PROJECT_ID: ${{ secrets.GKE_PROJECT }}
@@ -30,11 +30,13 @@ jobs:
       - name: 'Set up Cloud SDK'
         uses: google-github-actions/setup-gcloud@v2
 
-      - name: 'Use gcloud CLI'
-        run: gcloud info
-
       - name: Configure Docker for Artifact Registry
-        run: gcloud --quiet auth configure-docker
+        run: gcloud --quiet auth configure-docker $REGISTRY
+
+      - name: Docker login to Artifact Registry
+        run: |
+          gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin https://$REGISTRY
+
 
       - name: 'Get GKE credentials'
         uses: 'google-github-actions/get-gke-credentials@v2'
