@@ -1,0 +1,74 @@
+name: Release the_project
+
+on:
+  push:
+    branches:
+      main
+
+env:
+  PROJECT_ID: ${{ secrets.GKE_PROJECT }}
+  GKE_CLUSTER: dwk-cluster
+  GKE_ZONE: europe-north1-b
+  REGISTRY: europe-north1-docker.pkg.dev
+  REPOSITORY: project-repository
+  BRANCH: ${{ github.ref_name }}
+  
+jobs:
+  build-publish-deploy:
+    name: Build, Publish and Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - uses: google-github-actions/auth@v2
+        with:
+          credentials_json: '${{ secrets.GKE_SA_KEY }}'
+
+      - name: 'Set up Cloud SDK'
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: 'Use gcloud CLI'
+        run: gcloud info
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud --quiet auth configure-docker
+
+      - name: 'Get GKE credentials'
+        uses: 'google-github-actions/get-gke-credentials@v2'
+        with:
+          cluster_name: '${{ env.GKE_CLUSTER }}'
+          project_id: '${{ env.PROJECT_ID }}'
+          location: '${{ env.GKE_ZONE }}'
+          
+      - name: Form image tags
+        run: |
+          echo "TODO_APP_IMAGE=${REGISTRY}/${PROJECT_ID}/${REPOSITORY}/todo-app:${BRANCH}-${GITHUB_SHA}" >> $GITHUB_ENV
+          echo "TODO_BACKEND_IMAGE=${REGISTRY}/${PROJECT_ID}/${REPOSITORY}/todo-backend:${BRANCH}-${GITHUB_SHA}" >> $GITHUB_ENV
+          
+      - name: Build todo-app
+        run: docker build -t "$TODO_APP_IMAGE" ./the_project/todo-app
+
+      - name: Push todo-app
+        run: docker push "$TODO_APP_IMAGE"
+
+      - name: Build todo-backend
+        run: docker build -t "$TODO_BACKEND_IMAGE" ./the_project/todo-backend
+
+      - name: Push todo-backend
+        run: docker push "$TODO_BACKEND_IMAGE"
+        
+      - name: Set up Kustomize
+        uses: imranismail/setup-kustomize@v2.1.0  
+        
+      - name: Deploy to GKE
+        working-directory: the_project
+        run: |-
+          kustomize edit set image dazakharova/todo-app=$TODO_APP_IMAGE
+          kustomize edit set image dazakharova/todo-backend=$TODO_BACKEND_IMAGE
+          kustomize build . | kubectl apply -f -
+          kubectl rollout status deployment/todo-backend -n project
+          kubectl rollout status deployment/todo-app -n project
+          kubectl get ingress -n project -o wide
+          kubectl get services -n project -o wide
