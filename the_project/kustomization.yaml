@@ -4,7 +4,6 @@ namespace: project
 
 resources:
   - manifests/project-ns.yaml
-  - postgres/postgres-secret.yaml
   - postgres/postgres-statefulset.yaml
   - postgres/postgres-service.yaml
   - todo-backend/manifests/deployment.yaml
