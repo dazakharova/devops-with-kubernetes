@@ -12,6 +12,7 @@ env:
   REGISTRY: europe-north1-docker.pkg.dev
   REPOSITORY: project-repository
   BRANCH: ${{ github.ref_name }}
+  SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
   
 jobs:
   build-publish-deploy:
@@ -78,7 +79,7 @@ jobs:
           
           echo "Deploying branch '$BRANCH' to namespace '$NS'"
           
-          kubectl create namespace "$NS" || true
+          kubectl create namespace "$NS" --dry-run=client -o yaml | kubectl apply -f -
           kubectl config set-context --current --namespace="$NS"
 
           curl -sSL -o /usr/local/bin/sops \
