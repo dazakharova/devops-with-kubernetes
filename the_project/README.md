@@ -130,3 +130,46 @@ via Helm:
 - `alloy` – Grafana Alloy (log collector)
 
 Configuration files are located at `./manifests/loki` (accessed from the root of the repository).
+
+
+## DBaaS vs DIY
+
+## DIY (Self-managed database solution)
+
+### Pros
+
+1. High level of customization: Tailored specifically to organizational needs.
+2. Full control of infrastructure: Freedom in choosing hardware, software, and configurations.
+3. Own security management: Transparent and direct control over security measures. 
+4. Independence from vendor lock-in. 
+
+### Cons
+
+1. Significant initial costs: hardware and setup. 
+2. Ongoing operational expenses: Continual administrative and maintenance costs.
+3. Requires specialized personnel 
+4. Manual updates and patches: Manual patches increase vulnerability. 
+5. Backup complexity
+6. Scaling challenges: Difficulties in quickly expanding infrastructure. 
+
+## DBaaS
+
+### Pros 
+
+1. Quick setup: Rapid deployment through automated provisioning. 
+2. Cost-efficient: Lower initial investment compared to buying hardware.
+3. Automatic management: Automized updates, monitoring, and scaling.
+4. Scalable: Easy to scale resources based on demand.
+5. Modern tech access: Use latest technologies without large investment.
+6. No internal staff requirements
+7. Enhanced security: Provider takes responsibility for protecting data and ensuring high levels of uptime.
+8. Ease of Maintenance: Low operational effort required. 
+
+### Cons 
+
+1. Lock-in risks: Harder to switch vendor later. 
+2. Limited configurations: Less flexible when optimizing performance. 
+3. Monthly fees: Subscription model could become expensive.
+4. Less control: Reduced visibility into inner workings.
+5. Third-Party Dependence: Uptime affected by third-party outages.
+6. Security Concerns: Data hosted externally raises potential compliance issues.
