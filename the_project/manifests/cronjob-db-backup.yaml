@@ -1,0 +1,58 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: daily-db-backup
+  namespace: project
+spec:
+  schedule: "0 0 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        spec:
+          restartPolicy: Never
+          volumes:
+            - name: gcs-key
+              secret:
+                secretName: gcs-sa
+                items:
+                  - key: service-account.json
+                    path: service-account.json
+          containers:
+            - name: postgres-backup
+              image: dazakharova/todo-backup:1.1
+              envFrom:
+                - secretRef:
+                    name: postgres-secret
+              env:
+                - name: BUCKET_NAME
+                  value: "todo-backups"
+                - name: GOOGLE_APPLICATION_CREDENTIALS
+                  value: "/var/secrets/google/service-account.json"
+              volumeMounts:
+                - name: gcs-key
+                  mountPath: /var/secrets/google
+                  readOnly: true
+              command:
+                - /bin/bash
+                - -lc
+                - |
+                  set -euo pipefail
+
+                  cat > /root/.boto <<EOF
+                  [Credentials]
+                  gs_service_key_file = ${GOOGLE_APPLICATION_CREDENTIALS}
+                  EOF
+
+                  TS="$(date -u +%Y-%m-%dT%H%M%SZ)"
+                  OBJ="todo-backup-${TS}.sql"
+
+                  for i in 1 2 3 4 5 6; do
+                    pg_dump "$DATABASE_URL" | gsutil cp - "gs://${BUCKET_NAME}/${OBJ}" && exit 0
+                    sleep $((i * 10))
+                  done
+
+                  exit 1

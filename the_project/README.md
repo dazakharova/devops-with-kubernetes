@@ -131,6 +131,20 @@ via Helm:
 
 Configuration files are located at `./manifests/loki` (accessed from the root of the repository).
 
+## Database backups
+
+The project includes a Kubernetes CronJob that creates daily backups of the
+PostgreSQL database and uploads them to Google Cloud Storage.
+
+- Schedule: once every 24 hours
+- Backup tool: `pg_dump`
+- Storage: Google Cloud Storage bucket
+- Authentication: GCP Service Account mounted as a Secret
+
+The required GCP credentials secret (`gcs-sa`) is created manually in the cluster
+and is intentionally not committed to the repository.
+
+
 
 ## DBaaS vs DIY
 
@@ -173,3 +187,4 @@ Configuration files are located at `./manifests/loki` (accessed from the root of
 4. Less control: Reduced visibility into inner workings.
 5. Third-Party Dependence: Uptime affected by third-party outages.
 6. Security Concerns: Data hosted externally raises potential compliance issues.
+
