@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -99,6 +100,34 @@ func imageHandler(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, localPath)
 }
 
+func healthzHandler(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write([]byte("ok"))
+}
+
+func readyzHandler(w http.ResponseWriter, r *http.Request) {
+	if err := os.MkdirAll(cacheDir, 0o755); err != nil {
+		http.Error(w, "cache dir not writable", http.StatusServiceUnavailable)
+		return
+	}
+
+	f, err := os.CreateTemp(cacheDir, ".readyz-*")
+	if err != nil {
+		http.Error(w, "cache dir not writable", http.StatusServiceUnavailable)
+		return
+	}
+	name := f.Name()
+	_ = f.Close()
+
+	if err := os.Remove(name); err != nil && !errors.Is(err, os.ErrNotExist) {
+		http.Error(w, "cache dir cleanup failed", http.StatusServiceUnavailable)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write([]byte("ok"))
+}
+
 func main() {
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -106,6 +135,8 @@ func main() {
 	}
 
 	mux := http.NewServeMux()
+	mux.HandleFunc("GET /healthz", healthzHandler)
+	mux.HandleFunc("GET /readyz", readyzHandler)
 	mux.Handle("GET /", http.FileServer(http.Dir("public")))
 	mux.Handle("GET /image", http.HandlerFunc(imageHandler))
 

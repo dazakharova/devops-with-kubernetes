@@ -138,6 +138,26 @@ func createTodo(store *models.TodoStore, logger *slog.Logger) http.HandlerFunc {
 	}
 }
 
+func healthzHandler(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write([]byte("ok"))
+}
+
+func readyzHandler(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx, cancel := context.WithTimeout(r.Context(), 2*time.Second)
+		defer cancel()
+
+		if err := db.PingContext(ctx); err != nil {
+			http.Error(w, "db not ready", http.StatusServiceUnavailable)
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("ok"))
+	}
+}
+
 func main() {
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -184,6 +204,8 @@ func main() {
 	logger.Info("starting server", slog.String("port", port))
 
 	mux := http.NewServeMux()
+	mux.HandleFunc("GET /healthz", healthzHandler)
+	mux.HandleFunc("GET /readyz", readyzHandler(db))
 	mux.HandleFunc("/", homeHandler)
 	mux.HandleFunc("GET /todos", getTodos(store))
 	mux.HandleFunc("POST /todos", createTodo(store, logger))
