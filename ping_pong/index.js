@@ -11,6 +11,10 @@ if (!connectionString) {
 
 const pool = new Pool({ connectionString });
 
+async function dbReady() {
+    await pool.query('SELECT 1');
+}
+
 async function getCounter() {
   const result = await pool.query(
       'SELECT value FROM pingpong_counter WHERE id = 1'
@@ -32,22 +36,36 @@ async function incrementCounter() {
 }
 
 const server = http.createServer(async (req, res) => {
-  if (req.method === 'GET' && req.url === '/') {
-    const value = await incrementCounter();
-    res.statusCode = 200;
-    res.setHeader('Content-Type', 'text/plain');
-    res.end(`pong ${value}`);
-  } else if (req.method === 'GET' && req.url === '/pings') {
-    const value = await getCounter();
-    res.statusCode = 200;
-    res.setHeader('Content-Type', 'text/plain');
-    res.end(value.toString());
-  } else {
-    console.error('Error handling request');
-    res.statusCode = 500;
-    res.setHeader('Content-Type', 'text/plain');
-    res.end('Internal server error');
-  }
+    try {
+        if (req.method === 'GET' && req.url === '/readyz') {
+            await pool.query('SELECT 1');
+            res.statusCode = 200;
+            res.setHeader('Content-Type', 'text/plain');
+            return res.end('ready\n');
+        }
+
+        if (req.method === 'GET' && req.url === '/') {
+            const value = await incrementCounter();
+            res.statusCode = 200;
+            res.setHeader('Content-Type', 'text/plain');
+            return res.end(`pong ${value}\n`);
+        }
+
+        if (req.method === 'GET' && req.url === '/pings') {
+            const value = await getCounter();
+            res.statusCode = 200;
+            res.setHeader('Content-Type', 'text/plain');
+            return res.end(value.toString());
+        }
+
+        res.statusCode = 404;
+        res.end('Not found');
+    } catch (err) {
+        console.error(err);
+        res.statusCode = 503; // critical: don't crash the process
+        res.setHeader('Content-Type', 'text/plain');
+        res.end('db not ready\n');
+    }
 });
 
 server.listen(port, () => {

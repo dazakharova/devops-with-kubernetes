@@ -41,6 +41,18 @@ const server = http.createServer((req, res) => {
     res.statusCode = 200;
     res.setHeader('Content-Type', 'text/plain');
     return res.end('ok\n');
+  } else if (req.method === 'GET' && req.url === '/readyz') {
+    getPings()
+        .then(() => {
+            res.statusCode = 200;
+            res.setHeader('Content-Type', 'text/plain');
+            res.end('ready\n');
+        })
+        .catch(() => {
+            res.statusCode = 503;
+            res.setHeader('Content-Type', 'text/plain');
+            res.end('not ready\n');
+        });
   } else if (req.method === 'GET' && req.url === '/status') {
     readFileSafe(statusFile, '', (statusErr, statusData) => {
       if (statusErr) {
@@ -48,7 +60,7 @@ const server = http.createServer((req, res) => {
         res.statusCode = 500;
         res.setHeader('Content-Type', 'text/plain');
         return res.end('Error reading status file');
-      }
+      } 
 
       fs.readFile(infoFile, 'utf8', (infoErr, infoData) => {
         const fileLine = infoErr
