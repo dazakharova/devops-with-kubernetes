@@ -4,11 +4,13 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"io"
 	"log"
 	"log/slog"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -54,7 +56,7 @@ func getTodos(store *models.TodoStore) http.HandlerFunc {
 		ctx, cancel := context.WithTimeout(r.Context(), 3*time.Second)
 		defer cancel()
 
-		todos, err := store.ListAllTitles(ctx)
+		todos, err := store.ListAllTodos(ctx)
 		if err != nil {
 			http.Error(w, "failed to load todos", http.StatusInternalServerError)
 			return
@@ -127,7 +129,40 @@ func createTodo(store *models.TodoStore, logger *slog.Logger) http.HandlerFunc {
 			slog.String("todo", todo),
 		)
 
-		todos, err := store.ListAllTitles(ctx)
+		todos, err := store.ListAllTodos(ctx)
+		if err != nil {
+			http.Error(w, "failed to load todos", http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(todos)
+	}
+}
+
+func markTodoDone(store *models.TodoStore, logger *slog.Logger) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		idStr := r.PathValue("id")
+		id, err := strconv.ParseInt(idStr, 10, 64)
+		if err != nil || id <= 0 {
+			http.Error(w, "invalid id", http.StatusBadRequest)
+			return
+		}
+
+		ctx, cancel := context.WithTimeout(r.Context(), 3*time.Second)
+		defer cancel()
+
+		if err := store.MarkDone(ctx, id); err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				http.Error(w, "todo not found", http.StatusNotFound)
+				return
+			}
+			logger.Error("failed to mark todo done", slog.String("error", err.Error()))
+			http.Error(w, "failed to update todo", http.StatusInternalServerError)
+			return
+		}
+
+		todos, err := store.ListAllTodos(ctx)
 		if err != nil {
 			http.Error(w, "failed to load todos", http.StatusInternalServerError)
 			return
@@ -209,6 +244,7 @@ func main() {
 	mux.HandleFunc("/", homeHandler)
 	mux.HandleFunc("GET /todos", getTodos(store))
 	mux.HandleFunc("POST /todos", createTodo(store, logger))
+	mux.HandleFunc("PUT /todos/{id}", markTodoDone(store, logger))
 
 	handler := requestLogger(logger, mux)
 
