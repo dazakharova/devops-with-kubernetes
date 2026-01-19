@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: todo-backend
-          image: dazakharova/todo-backend:1.8
+          image: dazakharova/todo-backend:1.9
           imagePullPolicy: Always
           resources:
             requests:
@@ -31,6 +31,8 @@ spec:
                 secretKeyRef:
                   name: postgres-secret
                   key: DATABASE_URL
+            - name: NATS_URL
+              value: nats://my-nats.default.svc.cluster.local:4222
           startupProbe:
             httpGet:
               path: /healthz

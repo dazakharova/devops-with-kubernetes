@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"github.com/nats-io/nats.go"
 	"io"
 	"log"
 	"log/slog"
@@ -18,7 +19,11 @@ import (
 	_ "github.com/lib/pq"
 )
 
-const maxTodoLen = 140
+const (
+	maxTodoLen  = 140
+	todoSubject = "todos.events"
+	natsTimeout = 3 * time.Second
+)
 
 type statusWriter struct {
 	http.ResponseWriter
@@ -51,6 +56,23 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("ok"))
 }
 
+func publishTodoEvent(nc *nats.Conn, logger *slog.Logger, payload any) {
+	b, err := json.Marshal(payload)
+	if err != nil {
+		logger.Error("failed to marshal todo event", slog.String("error", err.Error()))
+		return
+	}
+	if err := nc.Publish(todoSubject, b); err != nil {
+		logger.Error("failed to publish todo event", slog.String("error", err.Error()))
+		return
+	}
+	// Optional: ensure it actually flushes out soon
+	if err := nc.FlushTimeout(natsTimeout); err != nil {
+		logger.Error("nats flush failed", slog.String("error", err.Error()))
+		return
+	}
+}
+
 func getTodos(store *models.TodoStore) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx, cancel := context.WithTimeout(r.Context(), 3*time.Second)
@@ -67,7 +89,7 @@ func getTodos(store *models.TodoStore) http.HandlerFunc {
 	}
 }
 
-func createTodo(store *models.TodoStore, logger *slog.Logger) http.HandlerFunc {
+func createTodo(store *models.TodoStore, logger *slog.Logger, nc *nats.Conn) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		bodyBytes, err := io.ReadAll(r.Body)
 		if err != nil {
@@ -129,6 +151,13 @@ func createTodo(store *models.TodoStore, logger *slog.Logger) http.HandlerFunc {
 			slog.String("todo", todo),
 		)
 
+		publishTodoEvent(nc, logger, map[string]any{
+			"event":     "todo_created",
+			"title":     todo,
+			"timestamp": time.Now().UTC().Format(time.RFC3339),
+			"service":   "todo-backend",
+		})
+
 		todos, err := store.ListAllTodos(ctx)
 		if err != nil {
 			http.Error(w, "failed to load todos", http.StatusInternalServerError)
@@ -140,7 +169,7 @@ func createTodo(store *models.TodoStore, logger *slog.Logger) http.HandlerFunc {
 	}
 }
 
-func markTodoDone(store *models.TodoStore, logger *slog.Logger) http.HandlerFunc {
+func markTodoDone(store *models.TodoStore, logger *slog.Logger, nc *nats.Conn) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		idStr := r.PathValue("id")
 		id, err := strconv.ParseInt(idStr, 10, 64)
@@ -161,6 +190,13 @@ func markTodoDone(store *models.TodoStore, logger *slog.Logger) http.HandlerFunc
 			http.Error(w, "failed to update todo", http.StatusInternalServerError)
 			return
 		}
+
+		publishTodoEvent(nc, logger, map[string]any{
+			"event":     "todo_done",
+			"todoId":    id,
+			"timestamp": time.Now().UTC().Format(time.RFC3339),
+			"service":   "todo-backend",
+		})
 
 		todos, err := store.ListAllTodos(ctx)
 		if err != nil {
@@ -204,9 +240,28 @@ func main() {
 		log.Fatal("DATABASE_URL is not set")
 	}
 
+	natsURL := os.Getenv("NATS_URL")
+	if natsURL == "" {
+		log.Fatal("NATS_URL is not set")
+	}
+
 	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
 		Level: slog.LevelInfo,
 	}))
+
+	nc, err := nats.Connect(
+		natsURL,
+		nats.Name("todo-backend"),
+		nats.Timeout(natsTimeout),
+		nats.RetryOnFailedConnect(true),
+		nats.MaxReconnects(-1), // keep trying
+		nats.ReconnectWait(1*time.Second),
+	)
+	if err != nil {
+		logger.Error("failed to connect to nats", slog.String("error", err.Error()))
+		os.Exit(1)
+	}
+	defer nc.Close()
 
 	db, err := sql.Open("postgres", dsn)
 	if err != nil {
@@ -241,10 +296,10 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /healthz", healthzHandler)
 	mux.HandleFunc("GET /readyz", readyzHandler(db))
-	mux.HandleFunc("/", homeHandler)
+	mux.HandleFunc("GET /", homeHandler)
 	mux.HandleFunc("GET /todos", getTodos(store))
-	mux.HandleFunc("POST /todos", createTodo(store, logger))
-	mux.HandleFunc("PUT /todos/{id}", markTodoDone(store, logger))
+	mux.HandleFunc("POST /todos", createTodo(store, logger, nc))
+	mux.HandleFunc("PUT /todos/{id}", markTodoDone(store, logger, nc))
 
 	handler := requestLogger(logger, mux)
 
