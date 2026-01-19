@@ -11,3 +11,4 @@ resources:
   - todo-app/manifests/deployment.yaml
   - todo-app/manifests/service.yaml
   - todo-app/manifests/ingress.yaml
+  - broadcaster/manifests/deployment.yaml

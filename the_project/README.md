@@ -188,3 +188,25 @@ and is intentionally not committed to the repository.
 5. Third-Party Dependence: Uptime affected by third-party outages.
 6. Security Concerns: Data hosted externally raises potential compliance issues.
 
+## Message Queue Integration (NATS)
+
+This project uses **NATS** for asynchronous communication between services.
+
+### Todo Backend
+- Publishes events to NATS subject `todos.events` when:
+    - a todo is created
+    - a todo is marked as done
+
+### Broadcaster Service
+- Subscribes to `todos.events` using a **queue subscription**
+- Forwards todo status updates to **Telegram**
+
+### Architecture
+todo-backend -> NATS -> broadcaster -> Telegram
+
+### Environment Variables (Broadcaster)
+- `NATS_URL`
+- `TELEGRAM_BOT_TOKEN`
+- `TELEGRAM_CHAT_ID`
+- `NATS_SUBJECT` (default: `todos.events`)
+- `NATS_QUEUE` (default: `broadcaster`)
