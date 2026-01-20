@@ -9,9 +9,6 @@ resources:
 - manifests/gateway.yaml
 - manifests/route.yaml
 images:
-- name: PROJECT/IMAGE
-  newName: dazakharova/log_output
-  newTag: 90fa666d28b7c9cd1563537cee50a338d4792536
 - name: dazakharova/log_output
   newName: dazakharova/log_output
   newTag: 65a5f347c261decb76035a6a0a19d78d21de73af
