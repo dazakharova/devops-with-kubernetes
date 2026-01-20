@@ -11,4 +11,4 @@ resources:
 images:
 - name: dazakharova/log_output
   newName: dazakharova/log_output
-  newTag: 65a5f347c261decb76035a6a0a19d78d21de73af
+  newTag: 032236fabb9ea64bc2ba22cb4cded5090f6301eb
