@@ -3,8 +3,12 @@ kind: Kustomization
 namespace: exercises
 
 resources:
-  - manifests/configmap.yaml
-  - manifests/deployment.yaml
-  - manifests/service.yaml
-  - manifests/gateway.yaml
-  - manifests/route.yaml
+- manifests/configmap.yaml
+- manifests/deployment.yaml
+- manifests/service.yaml
+- manifests/gateway.yaml
+- manifests/route.yaml
+images:
+- name: PROJECT/IMAGE
+  newName: dazakharova/log_output
+  newTag: 90fa666d28b7c9cd1563537cee50a338d4792536
