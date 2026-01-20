@@ -33,8 +33,7 @@ jobs:
       - name: Update image in kustomization
         run: |
           cd log_output
-          kustomize edit set image PROJECT/IMAGE=dazakharova/log_output:${GITHUB_SHA}
-
+          kustomize edit set image dazakharova/log_output=dazakharova/log_output:${GITHUB_SHA}
       - name: Commit kustomization.yaml
         uses: EndBug/add-and-commit@v9
         with:
