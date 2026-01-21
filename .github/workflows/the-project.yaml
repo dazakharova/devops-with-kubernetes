@@ -5,7 +5,7 @@ on:
     branches: [ "main" ]
     paths:
       - "the_project/**"
-      - ".github/workflows/the_project.yaml"
+      - ".github/workflows/the-project.yaml"
 
 jobs:
   build-publish:
