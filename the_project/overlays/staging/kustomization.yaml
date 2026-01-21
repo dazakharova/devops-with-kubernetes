@@ -7,3 +7,8 @@ resources:
   
 patches:
   - path: broadcaster-patch.yaml
+    
+images:
+  - name: dazakharova/todo-broadcaster
+    newName: dazakharova/todo-broadcaster
+    newTag: 5d8d646b755004fa28e20e937d83bc3f89e90224
