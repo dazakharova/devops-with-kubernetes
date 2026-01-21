@@ -4,7 +4,7 @@ namespace: project-prod
 
 resources:
   - ./../../base
-  - ./../../manifests/cronjob-db-backup.yaml
+  - cronjob-db-backup.yaml
 
 patches:
   - path: broadcaster-patch.yaml
