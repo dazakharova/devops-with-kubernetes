@@ -15,8 +15,8 @@ resources:
 
 images:
   - name: dazakharova/todo-app
-    newTag: 2.0
+    newTag: "2.0"
   - name: dazakharova/todo-backend
-    newTag: 1.9
+    newTag: "1.9"
   - name: dazakharova/todo-broadcaster
-    newTag: 1.0
+    newTag: "1.0"
