@@ -12,3 +12,11 @@ resources:
   - todo-app/manifests/service.yaml
   - todo-app/manifests/ingress.yaml
   - broadcaster/manifests/deployment.yaml
+
+images:
+  - name: dazakharova/todo-app
+    newTag: 2.0
+  - name: dazakharova/todo-backend
+    newTag: 1.9
+  - name: dazakharova/todo-broadcaster
+    newTag: 1.0
