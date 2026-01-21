@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: the-project-prod
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/dazakharova/devops-with-kubernetes.git
+    path: the_project/overlays/prod
+    targetRevision: "4.9"
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: project-prod
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
