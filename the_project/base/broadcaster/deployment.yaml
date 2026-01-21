@@ -22,9 +22,8 @@ spec:
               value: todos.events
             - name: NATS_QUEUE
               value: broadcaster
-            # default mode; staging/prod patches override if desired
             - name: BROADCAST_MODE
-              value: telegram
+              value: log
           ports:
             - containerPort: 8080
           readinessProbe:
