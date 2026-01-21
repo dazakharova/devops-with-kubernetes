@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: broadcaster
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: broadcaster
+  template:
+    metadata:
+      labels:
+        app: broadcaster
+    spec:
+      containers:
+        - name: broadcaster
+          image: dazakharova/todo-broadcaster:1.0
+          env:
+            - name: NATS_URL
+              value: nats://my-nats.default.svc.cluster.local:4222
+            - name: NATS_SUBJECT
+              value: todos.events
+            - name: NATS_QUEUE
+              value: broadcaster
+            # default mode; staging/prod patches override if desired
+            - name: BROADCAST_MODE
+              value: telegram
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 8080
+            initialDelaySeconds: 2
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 3

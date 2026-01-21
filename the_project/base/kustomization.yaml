@@ -2,12 +2,12 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  - ../postgres/postgres-statefulset.yaml
-  - ../postgres/postgres-service.yaml
-  - ../todo-backend/manifests/deployment.yaml
-  - ../todo-backend/manifests/service.yaml
-  - ../todo-app/manifests/configmap.yaml
-  - ../todo-app/manifests/deployment.yaml
-  - ../todo-app/manifests/service.yaml
-  - ../todo-app/manifests/ingress.yaml
-  - ../broadcaster/manifests/deployment.yaml
+  - postgres/postgres-statefulset.yaml
+  - postgres/postgres-service.yaml
+  - todo-backend/deployment.yaml
+  - todo-backend/service.yaml
+  - todo-app/configmap.yaml
+  - todo-app/deployment.yaml
+  - todo-app/service.yaml
+  - todo-app/ingress.yaml
+  - broadcaster/deployment.yaml
