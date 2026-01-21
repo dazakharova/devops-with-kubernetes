@@ -104,7 +104,7 @@ func main() {
 
 	mode := os.Getenv("BROADCAST_MODE")
 	if mode == "" {
-		mode = "telegram"
+		mode = "log"
 	}
 	mode = strings.ToLower(strings.TrimSpace(mode))
 
