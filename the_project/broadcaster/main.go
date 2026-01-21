@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/nats-io/nats.go"
@@ -101,14 +102,22 @@ func main() {
 		log.Fatal("NATS_URL must be set")
 	}
 
-	botToken := os.Getenv("TELEGRAM_BOT_TOKEN")
-	if botToken == "" {
-		log.Fatal("TELEGRAM_BOT_TOKEN must be set")
+	mode := os.Getenv("BROADCAST_MODE")
+	if mode == "" {
+		mode = "telegram"
 	}
+	mode = strings.ToLower(strings.TrimSpace(mode))
 
+	// Telegram envs only required in telegram mode
+	botToken := os.Getenv("TELEGRAM_BOT_TOKEN")
 	chatID := os.Getenv("TELEGRAM_CHAT_ID")
-	if chatID == "" {
-		log.Fatal("TELEGRAM_CHAT_ID must be set")
+	if mode == "telegram" {
+		if botToken == "" {
+			log.Fatal("TELEGRAM_BOT_TOKEN must be set (telegram mode)")
+		}
+		if chatID == "" {
+			log.Fatal("TELEGRAM_CHAT_ID must be set (telegram mode)")
+		}
 	}
 
 	subject := os.Getenv("NATS_SUBJECT")
@@ -140,7 +149,6 @@ func main() {
 
 	client := &http.Client{Timeout: 10 * time.Second}
 
-	// Queue subscription => no duplicates when scaled
 	_, err = nc.QueueSubscribe(subject, queue, func(msg *nats.Msg) {
 		raw := string(msg.Data)
 
@@ -151,6 +159,11 @@ func main() {
 		}
 
 		text := formatMessage(ev, raw)
+
+		if mode == "log" {
+			logger.Info("staging broadcast (log mode)", slog.String("message", text))
+			return
+		}
 
 		if err := sendTelegram(client, botToken, chatID, text); err != nil {
 			logger.Error("failed to send telegram message", slog.String("error", err.Error()))
@@ -164,13 +177,13 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Ensure subscription is registered
 	if err := nc.FlushTimeout(natsTimeout); err != nil {
 		logger.Error("nats flush failed", slog.String("error", err.Error()))
 		os.Exit(1)
 	}
 
 	logger.Info("broadcaster started",
+		slog.String("mode", mode),
 		slog.String("subject", subject),
 		slog.String("queue", queue),
 		slog.String("port", port),
@@ -180,7 +193,6 @@ func main() {
 	mux.HandleFunc("GET /healthz", healthzHandler)
 	mux.HandleFunc("GET /readyz", readyzHandler(nc))
 
-	// blocks forever like your todo-backend
 	if err := http.ListenAndServe(":"+port, mux); err != nil {
 		logger.Error("server failed", slog.String("error", err.Error()))
 		os.Exit(1)

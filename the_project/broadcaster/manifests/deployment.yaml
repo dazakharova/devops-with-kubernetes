@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: broadcaster
-  namespace: project
 spec:
   replicas: 1
   selector:
@@ -19,20 +18,13 @@ spec:
           env:
             - name: NATS_URL
               value: nats://my-nats.default.svc.cluster.local:4222
-            - name: TELEGRAM_BOT_TOKEN
-              valueFrom:
-                secretKeyRef:
-                  name: telegram-secret
-                  key: BOT_TOKEN
-            - name: TELEGRAM_CHAT_ID
-              valueFrom:
-                secretKeyRef:
-                  name: telegram-secret
-                  key: CHAT_ID
             - name: NATS_SUBJECT
               value: todos.events
             - name: NATS_QUEUE
               value: broadcaster
+            # default mode; staging/prod patches override if desired
+            - name: BROADCAST_MODE
+              value: telegram
           ports:
             - containerPort: 8080
           readinessProbe:
