@@ -210,3 +210,24 @@ todo-backend -> NATS -> broadcaster -> Telegram
 - `TELEGRAM_CHAT_ID`
 - `NATS_SUBJECT` (default: `todos.events`)
 - `NATS_QUEUE` (default: `broadcaster`)
+
+
+## GitOps setup
+
+This project uses a GitOps-based deployment model with **separate repositories** for
+application source code and Kubernetes configuration.
+
+## Exercise 4.10
+
+
+**Deployment configuration repository**
+
+  Contains all Kubernetes manifests, Kustomize bases and overlays, and ArgoCD
+  Application definitions used for deployment.
+
+```
+https://github.com/dazakharova/devops-with-kubernetes-config.git
+```
+
+
+
